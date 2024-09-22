@@ -3,7 +3,7 @@ MODALITY: 'voxel'
 DATA:
     DATASET: 'semantickitti'
     PETRELOSS_CONFIG: None
-    DATA_PATH: 'data_root/SemanticKITTI/sequences/'
+    DATA_PATH: '/data/rxm210041/data_root/SemanticKITTI/sequences/'
     VOXEL_SIZE: 0.05
     AUGMENT: 'GlobalAugment'
     NUM_POINTS: 1000000
@@ -11,7 +11,7 @@ DATA:
     TTA: False
     NUM_CLASSES: 7
     TARGET: 'kitti'
-    TARGET_PATH: 'data_root/SemanticKITTI/sequences/'
+    TARGET_PATH: '/data/rxm210041/data_root/SemanticKITTI/sequences/'
 
 MODEL:
     NAME: MinkNet
@@ -26,8 +26,8 @@ MODEL:
     IF_DIST: False
 
 OPTIM:
-    BATCH_SIZE_PER_GPU: 16
-    NUM_EPOCHS: 50
+    BATCH_SIZE_PER_GPU: 4
+    NUM_EPOCHS: 60
     OPTIMIZER: sgd
     LR_PER_SAMPLE: 0.01
     WEIGHT_DECAY: 0.0001
@@ -38,14 +38,15 @@ OPTIM:
     WARMUP_EPOCH: 1
 
 ACTIVE:
-    ACTIVE_METHOD: 'VCD'  # choices: [VCD, Random, Entropy, Margin]
+    ACTIVE_METHOD: 'L_EGS'  # choices: [VCD, Random, Entropy, Margin, EGS, LEM]
     SELECT_METHOD: 'voxel'
     VOXEL_SELECT_METHOD: 'max'
     ACTIVE_FREQUENCY: 3
-    ACTIVE_TIMES: 5
+    ACTIVE_TIMES: 6
     SELECT_NUM: 1
     ACTIVE_VOXEL_SIZE: 0.25
     MAX_POINT_PER_VOXEL: 100
+    PRE_SELECTED_VOXEL_PER_SCENE: 5
 
 WANDB:
     USE_WANDB: False

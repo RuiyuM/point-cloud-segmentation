@@ -330,7 +330,9 @@ class MinkNet(BaseSegmentor):
         )
         self.up4 = nn.ModuleList(self.up4)
 
-        self.classifier = nn.Sequential(nn.Linear(cs[8], self.num_class))
+        self.classifier = nn.Sequential(
+            nn.Linear(cs[8], self.num_class)
+        )
 
         self.weight_initialization()
 
@@ -375,10 +377,10 @@ class MinkNet(BaseSegmentor):
                 nn.init.constant_(m.weight, 1)
                 nn.init.constant_(m.bias, 0)
 
-    def forward(self, batch_dict, return_logit=False, return_tta=False):
+    def forward(self, batch_dict, is_active=None, is_training=None, return_logit=False, return_tta=False):
         x = batch_dict['lidar']
         x.F = x.F[:, :self.in_feature_dim]
-
+        averaged_tensor = None
         x0 = self.stem(x)
         x1 = self.stage1(x0)
         x2 = self.stage2(x1)
@@ -405,8 +407,27 @@ class MinkNet(BaseSegmentor):
 
         out = self.classifier(y4.F)
 
+        if is_active:
+            out_list = [out.detach()]  # Detach 'out' to use it as a base value that doesn't affect gradients
+            dropout = nn.Dropout(p=0.3, inplace=False)  # Initialize dropout
+            for i in range(5 - 1):
+                # new_out = self.classifier(y4.F.detach())  # Detach y4.F to prevent gradients from flowing back
+                # new_out = dropout(new_out)  # Apply dropout to the output
+                dropped_out = dropout(y4.F.detach())  # Detach y4.F and apply dropout
+
+                # Pass the dropout-modified output to the classifier
+                new_out = self.classifier(dropped_out)
+
+                # Append the result to the list
+                out_list.append(new_out.detach())
+            stacked_out = torch.stack(out_list, 0)
+            # # average logit
+            # averaged_tensor = torch.mean(stacked_out, dim=0).detach()  # Ensure the result is detached
+            averaged_tensor = stacked_out
         return {'network_loss': self.criterion_losses,
-                'voxel_predict_logits': out, }
+                'voxel_predict_logits': out,
+                'stacked_predict_logits': averaged_tensor
+                }
 
     def forward_ensemble(self, batch_dict):
         return self.forward(batch_dict, ensemble=True)

@@ -3,7 +3,7 @@ MODALITY: 'voxel'
 DATA:
     DATASET: 'semantickitti'
     PETRELOSS_CONFIG: None
-    DATA_PATH: 'data_root/SemanticKITTI/sequences/'
+    DATA_PATH: '/data/rxm210041/data_root/SemanticKITTI/sequences/'
     VOXEL_SIZE: 0.05
     AUGMENT: 'GlobalAugment'
     NUM_POINTS: 1000000
@@ -11,7 +11,7 @@ DATA:
     TTA: False
     NUM_CLASSES: 19
     TARGET: 'kitti'
-    TARGET_PATH: 'data_root/SemanticKITTI/sequences/'
+    TARGET_PATH: '/data/rxm210041/data_root/SemanticKITTI/sequences/'
 
 MODEL:
     NAME: SPVCNN

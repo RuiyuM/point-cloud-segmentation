@@ -3,7 +3,7 @@ MODALITY: 'voxel'
 DATA:
     DATASET: 'semantickitti'  # choices: ['nuscenes', 'semantickitti', 'scribblekitti']
     PETRELOSS_CONFIG: None
-    DATA_PATH: 'data_root/SemanticKITTI/sequences/'
+    DATA_PATH: '/data/rxm210041/data_root/SemanticKITTI/sequences/'
     VOXEL_SIZE: 0.05
     AUGMENT: 'GlobalAugment'  # choices: ['GlobalAugment', 'GlobalAugment_LP']
     NUM_POINTS: 1000000
@@ -11,12 +11,12 @@ DATA:
     TTA: False
     NUM_CLASSES: 19
     TARGET: 'kitti'
-    TARGET_PATH: 'data_root/SemanticKITTI/sequences/'
+    TARGET_PATH: '/data/rxm210041/data_root/SemanticKITTI/sequences/'
 
 SOURCE_DATA:
     DATASET: 'synlidar'
     PETRELOSS_CONFIG: None
-    DATA_PATH: 'data_root/Synlidar/sequences/'
+    DATA_PATH: '/data/rxm210041/data_root/Synlidar/sequences/'
     VOXEL_SIZE: 0.05
     AUGMENT: 'GlobalAugment'
     NUM_POINTS: 1000000
@@ -24,7 +24,7 @@ SOURCE_DATA:
     TTA: False
     NUM_CLASSES: 19
     TARGET: 'kitti'
-    TARGET_PATH: 'data_root/SemanticKITTI/sequences/'
+    TARGET_PATH: '/data/rxm210041/data_root/SemanticKITTI/sequences/'
 
 MODEL:
     NAME: SPVCNN

@@ -3,7 +3,7 @@ MODALITY: 'voxel'
 DATA:
     DATASET: 'nuscenes'
     PETRELOSS_CONFIG: None
-    DATA_PATH: 'data_root/nuScenes'
+    DATA_PATH: '/data/rxm210041/data_root/nuScenes'
     VOXEL_SIZE: 0.05
     AUGMENT: 'GlobalAugment'
     NUM_POINTS: 1000000
@@ -11,12 +11,12 @@ DATA:
     TTA: False
     NUM_CLASSES: 7
     TARGET: 'nus'
-    TARGET_PATH: 'data_root/nuScenes'
+    TARGET_PATH: '/data/rxm210041/data_root/nuScenes'
 
 SOURCE_DATA:
     DATASET: 'semantickitti'
     PETRELOSS_CONFIG: None
-    DATA_PATH: 'data_root/SemanticKITTI/sequences/'
+    DATA_PATH: '/data/rxm210041/data_root/SemanticKITTI/sequences/'
     VOXEL_SIZE: 0.05
     AUGMENT: 'GlobalAugment'
     NUM_POINTS: 1000000
@@ -24,7 +24,7 @@ SOURCE_DATA:
     TTA: False
     NUM_CLASSES: 7
     TARGET: 'nuscenes'
-    TARGET_PATH: 'data_root/nuScenes/'
+    TARGET_PATH: '/data/rxm210041/data_root/nuScenes/'
 
 MODEL:
     NAME: SPVCNN

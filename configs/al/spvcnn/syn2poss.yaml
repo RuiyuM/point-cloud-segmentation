@@ -3,7 +3,7 @@ MODALITY: 'voxel'
 DATA:
     DATASET: 'semanticposs'
     PETRELOSS_CONFIG: None
-    DATA_PATH: 'data_root/SemanticPOSS/sequences/'
+    DATA_PATH: '/data/rxm210041/data_root/SemanticPOSS/sequences/'
     VOXEL_SIZE: 0.05
     AUGMENT: 'GlobalAugment'
     NUM_POINTS: 1000000
@@ -11,7 +11,7 @@ DATA:
     TTA: False
     NUM_CLASSES: 13
     TARGET: 'poss'
-    TARGET_PATH: 'data_root/SemanticPOSS/sequences/'
+    TARGET_PATH: '/data/rxm210041/data_root/SemanticPOSS/sequences/'
 
 MODEL:
     NAME: SPVCNN

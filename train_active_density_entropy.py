@@ -22,7 +22,8 @@ from annotator.optim import build_optimizer, build_scheduler
 from tools.utils.common import common_utils, commu_utils
 from tools.utils.train.config import cfgs, cfg_from_list, cfg_from_yaml_file, log_config_to_file
 from tools.utils.train_utils import model_state_to_cpu
-from annotator.active.sampler import RandomSelect, EntropySelect, MarginSelect, VCDSelect, Entropy_Greedy_Select, VCDSelect_statistic
+from annotator.active.sampler import RandomSelect, EntropySelect, MarginSelect, VCDSelect, Entropy_Greedy_Select, Location_Entropy_Max, Location_Entropy_Max_Centroid_distance, Density_Entropy_Greedy_Select_Overall
+
 import setproctitle
 import wandb
 import pickle
@@ -236,7 +237,6 @@ class Trainer:
         # later added
         self.selected_class_count = []
 
-
         if self.active_method == 'Random':
             self.active_sampler = RandomSelect(select_num=self.select_num,
                                                num_classes=self.num_classes,
@@ -262,13 +262,6 @@ class Trainer:
                                             voxel_size=self.active_voxel_size,
                                             max_points_per_voxel=self.max_points_per_voxel,
                                             voxel_select_method=cfgs.ACTIVE.VOXEL_SELECT_METHOD)
-        elif self.active_method == 'VCD_ST':
-            self.active_sampler = VCDSelect_statistic(select_num=self.select_num,
-                                            num_classes=self.num_classes,
-                                            select_method=self.select_method,
-                                            voxel_size=self.active_voxel_size,
-                                            max_points_per_voxel=self.max_points_per_voxel,
-                                            voxel_select_method=cfgs.ACTIVE.VOXEL_SELECT_METHOD)
         elif self.active_method == 'EGS':
             self.active_sampler = Entropy_Greedy_Select(select_num=self.select_num,
                                             num_classes=self.num_classes,
@@ -277,7 +270,21 @@ class Trainer:
                                             max_points_per_voxel=self.max_points_per_voxel,
                                             voxel_select_method=cfgs.ACTIVE.VOXEL_SELECT_METHOD)
         elif self.active_method == 'LEM':
-            self.active_sampler = Entropy_Greedy_Select(select_num=self.select_num,
+            self.active_sampler = Location_Entropy_Max(select_num=self.select_num,
+                                            num_classes=self.num_classes,
+                                            select_method=self.select_method,
+                                            voxel_size=self.active_voxel_size,
+                                            max_points_per_voxel=self.max_points_per_voxel,
+                                            voxel_select_method=cfgs.ACTIVE.VOXEL_SELECT_METHOD)
+        elif self.active_method == 'LEM_Cd':
+            self.active_sampler = Location_Entropy_Max_Centroid_distance(select_num=self.select_num,
+                                            num_classes=self.num_classes,
+                                            select_method=self.select_method,
+                                            voxel_size=self.active_voxel_size,
+                                            max_points_per_voxel=self.max_points_per_voxel,
+                                            voxel_select_method=cfgs.ACTIVE.VOXEL_SELECT_METHOD)
+        elif self.active_method == 'DEGSO':
+            self.active_sampler = Density_Entropy_Greedy_Select_Overall(select_num=self.select_num,
                                             num_classes=self.num_classes,
                                             select_method=self.select_method,
                                             voxel_size=self.active_voxel_size,
@@ -425,26 +432,24 @@ class Trainer:
             load_data_to_gpu(batch)
 
             with amp.autocast(enabled=self.if_amp):
-                ret_dict = self.model(batch, is_active=True, is_training=True)
+                ret_dict = self.model(batch)
                 if cfgs.MODEL.NAME in ['MinkNet', 'SPVCNN']:
-                    voxel_predict_logits_active = ret_dict['stacked_predict_logits']
                     voxel_predict_logits = ret_dict['voxel_predict_logits']
                     voxel_label = batch['targets'].F.long().cuda(non_blocking=True)
                     network_loss = ret_dict['network_loss']
                     mask_list = []
 
-                    true_selected_label_count = None
+                    true_selected_label_count = []
                     for i in range(len(batch['name'])):
                         name = batch['name'][i]
                         if if_active:
                             with torch.no_grad():
                                 assert self.masks[name].shape[0] == batch['raw_coord'][i].shape[0]
-                                voxel_preds_i = voxel_predict_logits_active[batch['targets'].C[:, 3] == i]
+                                voxel_preds_i = voxel_predict_logits[batch['targets'].C[:, 3] == i]
                                 preds_i = voxel_preds_i[batch['inverse_map'][i]]
                                 voxel_true_i = voxel_label[batch['targets'].C[:, 3] == i]
                                 true_i = voxel_true_i[batch['inverse_map'][i]]
                                 # if not self.selected_class_count:
-                                # double check this part ( )
                                 if self.active_times == 5:
                                     self.active_sampler = RandomSelect(select_num=self.select_num,
                                                                        num_classes=self.num_classes,
@@ -456,37 +461,35 @@ class Trainer:
                                         preds_i, true_i)
                                 else:
 
-                                    if self.active_method == 'EGS':
-                                        print("hello")
-                                        self.active_sampler = Entropy_Greedy_Select(select_num=self.select_num,
-                                                                                    num_classes=self.num_classes,
-                                                                                    select_method=self.select_method,
-                                                                                    voxel_size=self.active_voxel_size,
-                                                                                    max_points_per_voxel=self.max_points_per_voxel,
-                                                                                    voxel_select_method=cfgs.ACTIVE.VOXEL_SELECT_METHOD)
-                                        self.masks[name], true_selected_label_count = self.active_sampler.select(self.masks[name], batch['raw_coord'][i],
-                                                                            preds_i, true_i, self.selected_class_count)
+                                    if self.active_method == 'DEGSO':
+                                        # print("hello")
+                                        self.active_sampler = Density_Entropy_Greedy_Select_Overall(select_num=self.select_num,
+                                                                                   num_classes=self.num_classes,
+                                                                                   select_method=self.select_method,
+                                                                                   voxel_size=self.active_voxel_size,
+                                                                                   max_points_per_voxel=self.max_points_per_voxel,
+                                                                                   voxel_select_method=cfgs.ACTIVE.VOXEL_SELECT_METHOD)
+                                        self.masks[name], true_selected_label_count = self.active_sampler.select(
+                                            self.masks[name], batch['raw_coord'][i],
+                                            preds_i, true_i, self.selected_class_count)
                                     else:
-                                        self.active_sampler = VCDSelect_statistic(select_num=self.select_num,
-                                            num_classes=self.num_classes,
-                                            select_method=self.select_method,
-                                            voxel_size=self.active_voxel_size,
-                                            max_points_per_voxel=self.max_points_per_voxel,
-                                            voxel_select_method=cfgs.ACTIVE.VOXEL_SELECT_METHOD)
-                                        self.masks[name], true_stat, pre_stat = self.active_sampler.select(self.masks[name],
+                                        self.active_sampler = VCDSelect(select_num=self.select_num,
+                                                                        num_classes=self.num_classes,
+                                                                        select_method=self.select_method,
+                                                                        voxel_size=self.active_voxel_size,
+                                                                        max_points_per_voxel=self.max_points_per_voxel,
+                                                                        voxel_select_method=cfgs.ACTIVE.VOXEL_SELECT_METHOD)
+                                        self.masks[name] = self.active_sampler.select(self.masks[name],
                                                                                       batch['raw_coord'][i],
-                                                                                      preds_i, true_i)
-                                        self.point_cloud_stat_true.append(true_stat[0])
-                                        self.point_cloud_stat_pre.append(pre_stat[0])
-
-                                if self.active_method == 'EGS':
-                                    # if self.selected_class_count is None:
-                                    if All_true_selected_label_count is None:
-                                        All_true_selected_label_count = true_selected_label_count
-                                    else:
-                                        All_true_selected_label_count += true_selected_label_count
-                                    # if self.selected_class_count is not None:
-                                    #     self.selected_class_count += true_selected_label_count
+                                                                                      preds_i)
+                                if self.active_method == 'DEGSO':
+                                    if self.selected_class_count is None:
+                                        if All_true_selected_label_count is None:
+                                            All_true_selected_label_count = true_selected_label_count
+                                        else:
+                                            All_true_selected_label_count += true_selected_label_count
+                                    if self.selected_class_count is not None:
+                                        self.selected_class_count += true_selected_label_count
 
 
 
@@ -591,27 +594,25 @@ class Trainer:
                 tbar.set_postfix(disp_dict)
                 tbar.refresh()
 
-        if if_active and self.active_method == 'VCD_ST':
-
+        if if_active and self.active_method == 'DEGSO':
+            if self.selected_class_count is None:
+                self.selected_class_count = All_true_selected_label_count
+            # else:
+            # self.selected_class_count += All_true_selected_label_count
 
             # Construct the directory paths
             log_dir = cfgs.ROOT_DIR / 'logs' / cfgs.EXP_GROUP_PATH / cfgs.TAG / self.active_method
-            ckp_dir = log_dir / 'stats' / str(self.active_times)
+            ckp_dir = log_dir / 'True_label_counts_selected' / str(self.active_times)
 
             # Create the directory if it doesn't exist
             os.makedirs(ckp_dir, exist_ok=True)
 
             # File path where the tensor will be saved
-            file_path = ckp_dir / 'states_true.pkl'
+            file_path = ckp_dir / 'All_true_selected_label_count.pkl'
 
             # Save the tensor
             with open(file_path, 'wb') as f:
-                pickle.dump(self.point_cloud_stat_true, f)
-            file_path = ckp_dir / 'states_pre.pkl'
-
-            # Save the tensor
-            with open(file_path, 'wb') as f:
-                pickle.dump(self.point_cloud_stat_pre, f)
+                pickle.dump(self.selected_class_count, f)
 
         if self.rank == 0:
             pbar.close()
@@ -747,8 +748,6 @@ class Trainer:
         ) as tbar:
 
             for cur_epoch in tbar:
-                self.point_cloud_stat_true = []
-                self.point_cloud_stat_pre = []
                 self.cur_epoch = cur_epoch
                 self.train_one_epoch(tbar, self.cfgs.DATA)
                 trained_epoch = cur_epoch + 1
