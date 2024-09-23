@@ -206,6 +206,63 @@ class VCDSelect:
         else:
             raise NotImplementedError
 
+class Logit_Variance:
+    def __init__(self,
+                 select_num: int = 1,
+                 num_classes: int = 20,
+                 select_method: str = 'voxel',
+                 voxel_size: float = 0.25,
+                 max_points_per_voxel: int = 100,
+                 voxel_select_method: str = 'max'):
+        self.select_num = select_num
+        self.select_method = select_method
+        self.voxel_size = voxel_size
+        self.max_points_per_voxel = max_points_per_voxel
+        self.num_classes = num_classes
+
+    def select(self, mask, raw_coord=None, preds=None):
+        if self.select_method == 'voxel':
+            voxelized_coordinates, voxel_idx, inverse, point_in_voxel, voxel_point_counts = get_point_in_voxel(
+                raw_coord, self.voxel_size, self.max_points_per_voxel)
+
+            preds_label = preds
+            # Create an output tensor initialized with -1.0 (float) to match the dtype of preds_label
+            # class_num_count_cpu = preds_label.cpu()  # Move to CPU
+            # class_num_count_numpy = class_num_count_cpu.numpy()
+            point_in_voxel_label = torch.full(point_in_voxel.shape, -1.0, dtype=torch.float16).to(preds_label.device)
+
+            # Create a mask where point_in_voxel is not equal to -1
+            new_mask = (point_in_voxel != -1).to(preds_label.device)
+
+            # Use the mask to index both point_in_voxel_label and preds_label
+            # Assign the corresponding float values from preds_label to point_in_voxel_label
+            point_in_voxel_label[new_mask] = preds_label[point_in_voxel[new_mask]]
+
+            valid_mask = point_in_voxel_label != -1
+
+            # Calculate the sum of each voxel using the mask
+            voxel_sums = torch.where(valid_mask, point_in_voxel_label, torch.zeros_like(point_in_voxel_label)).sum(
+                dim=1)
+
+            # Count the valid entries in each voxel
+            valid_counts = valid_mask.sum(dim=1)
+
+            # Compute the average of each voxel, handling cases where the count is zero to avoid division by zero
+            voxel_averages = voxel_sums / valid_counts.where(valid_counts != 0, torch.ones_like(valid_counts))
+
+            # Handling NaN values if any voxel had all -1 (and thus a count of 0 leading to division by zero)
+            voxel_averages[
+                valid_counts == 0] = -1  # You can choose to set these to any specific value you deem appropriate
+
+
+            _, voxel_indices = torch.sort(voxel_averages, descending=True)
+            index = voxel_indices[mask[point_in_voxel[voxel_indices][:, 0]] == False]
+            mask[point_in_voxel[index[:self.select_num]]] = True
+            mask[-1] = False
+            return mask
+        else:
+            raise NotImplementedError
+
 
 class VCDSelect_statistic:
     def __init__(self,
