@@ -206,6 +206,63 @@ class VCDSelect:
         else:
             raise NotImplementedError
 
+
+class VCDSelect_variance:
+    def __init__(self,
+                 select_num: int = 1,
+                 num_classes: int = 20,
+                 select_method: str = 'voxel',
+                 voxel_size: float = 0.25,
+                 max_points_per_voxel: int = 100,
+                 voxel_select_method: str = 'max'):
+        self.select_num = select_num
+        self.select_method = select_method
+        self.voxel_size = voxel_size
+        self.max_points_per_voxel = max_points_per_voxel
+        self.num_classes = num_classes
+
+    def select(self, mask, raw_coord=None, preds=None):
+        if self.select_method == 'voxel':
+
+            # Initialize confusion score for each voxel across all batches
+            batch_confusion = []
+
+            for batch_index in range(preds.shape[1]):  # Iterating through each batch
+                voxelized_coordinates, voxel_idx, inverse, point_in_voxel, voxel_point_counts = get_point_in_voxel(
+                    raw_coord, self.voxel_size, self.max_points_per_voxel)
+
+                preds_label = preds[:, batch_index, :].max(dim=-1).indices
+                point_in_voxel_label = torch.where(point_in_voxel != -1, preds_label[point_in_voxel], -1)
+
+                class_num_count = torch.zeros((point_in_voxel_label.shape[0], self.num_classes + 1),
+                                              device=preds_label.device, dtype=torch.int)
+
+                for i in range(1, self.num_classes + 1):
+                    class_num_count_i = torch.where(point_in_voxel_label == i, 1, 0)
+                    class_num_count_i = torch.sum(class_num_count_i, dim=1)
+                    class_num_count[:, i] = class_num_count_i
+
+                class_num_probability = class_num_count / voxel_point_counts[:, None]
+                temp = torch.log2(class_num_probability)
+                log2_class_num_probability = torch.where(class_num_count != 0, temp,
+                                                         torch.tensor(0, device=preds_label.device, dtype=torch.float))
+                confusion = -torch.mul(class_num_probability, log2_class_num_probability).sum(dim=1)
+
+                batch_confusion.append(confusion)
+
+            # Average confusion across all batches
+            average_confusion = torch.stack(batch_confusion).mean(dim=0)
+
+            # Sort based on average confusion and update mask
+            _, voxel_indices = torch.sort(average_confusion, descending=True)
+            index = voxel_indices[mask[point_in_voxel[voxel_indices][:, 0]] == False]
+            mask[point_in_voxel[index[:self.select_num]]] = True
+            mask[-1] = False
+            return mask
+
+        else:
+            raise NotImplementedError
+
 class Logit_Variance:
     def __init__(self,
                  select_num: int = 1,
@@ -229,7 +286,7 @@ class Logit_Variance:
             # Create an output tensor initialized with -1.0 (float) to match the dtype of preds_label
             # class_num_count_cpu = preds_label.cpu()  # Move to CPU
             # class_num_count_numpy = class_num_count_cpu.numpy()
-            point_in_voxel_label = torch.full(point_in_voxel.shape, -1.0, dtype=torch.float16).to(preds_label.device)
+            point_in_voxel_label = torch.full(point_in_voxel.shape, -1.0, dtype=torch.float32).to(preds_label.device)
 
             # Create a mask where point_in_voxel is not equal to -1
             new_mask = (point_in_voxel != -1).to(preds_label.device)
@@ -296,7 +353,9 @@ class VCDSelect_statistic:
                 class_num_count_i = torch.where(point_in_voxel_label == i, 1, 0)
                 class_num_count_i = torch.sum(class_num_count_i, dim=1)
                 class_num_count[:, i] = class_num_count_i
-
+            max_values, max_index = torch.max(class_num_count, dim=1, keepdim=True)
+            class_num_count_cpu = class_num_count.cpu()  # Move to CPU
+            class_num_count_numpy = class_num_count_cpu.numpy()
             class_num_probability = class_num_count / voxel_point_counts[:, None]
             temp = torch.log2(class_num_probability)
             log2_class_num_probability = torch.where(class_num_count != 0, temp,
@@ -321,6 +380,134 @@ class VCDSelect_statistic:
             point_cloud_stat_true.append((pre_selected_label_count_true, max_number_of_point_per_voxel))
             point_cloud_stat_pre.append((pre_selected_label_count_predicted, max_number_of_point_per_voxel))
             return mask, point_cloud_stat_true, point_cloud_stat_pre
+        else:
+            raise NotImplementedError
+class Logit_Select_Reverse:
+    def __init__(self,
+                 select_num: int = 1,
+                 num_classes: int = 20,
+                 select_method: str = 'voxel',
+                 voxel_size: float = 0.25,
+                 max_points_per_voxel: int = 100,
+                 voxel_select_method: str = 'max'):
+        self.select_num = select_num
+        self.select_method = select_method
+        self.voxel_size = voxel_size
+        self.max_points_per_voxel = max_points_per_voxel
+        self.num_classes = num_classes
+
+    def select(self, mask, raw_coord=None, preds=None, true_label=None, stacked_out=None):
+        if self.select_method == 'voxel':
+            voxelized_coordinates, voxel_idx, inverse, point_in_voxel, voxel_point_counts = get_point_in_voxel(
+                raw_coord, self.voxel_size, self.max_points_per_voxel)
+
+            preds_label = preds.max(dim=-1).indices
+            # class_num_count_cpu = preds_label.cpu()  # Move to CPU
+            # class_num_count_numpy = class_num_count_cpu.numpy()
+            point_in_voxel_label = torch.where(point_in_voxel != -1, preds_label[point_in_voxel], -1)
+            point_in_voxel_label_true = torch.where(point_in_voxel != -1, true_label[point_in_voxel], -1)
+
+            class_num_count = torch.zeros((point_in_voxel_label.shape[0], self.num_classes + 1),
+                                          device=preds_label.device, dtype=torch.int)
+            max_number_of_point_per_voxel = point_in_voxel_label.size(1)
+
+            # class_num_count_cpu = point_in_voxel_label.cpu()  # Move to CPU
+            # class_num_count_numpy = class_num_count_cpu.numpy()
+            for i in range(1, self.num_classes + 1):
+                class_num_count_i = torch.where(point_in_voxel_label == i, 1, 0)
+                class_num_count_i = torch.sum(class_num_count_i, dim=1)
+                class_num_count[:, i] = class_num_count_i
+            max_values, max_index = torch.max(class_num_count, dim=1, keepdim=True)
+            # Gather the majority labels for each voxel
+            majority_labels = max_index.squeeze(1)
+
+            # Create a mask to filter out invalid points (-1)
+            valid_points_mask = point_in_voxel != -1
+
+            # Create a tensor to hold logits for the majority labels
+            majority_logits = torch.zeros(point_in_voxel.shape[0], point_in_voxel.shape[1], device=preds.device, dtype=torch.float16)
+
+            # Loop through each voxel and gather logits for the majority label for each valid point in that voxel
+            for i in range(self.num_classes + 1):
+                mask_for_label = (majority_labels == i)[:,
+                                 None] & valid_points_mask  # Mask for voxels with majority label 'i'
+                selected_voxels = torch.masked_select(point_in_voxel, mask_for_label).view(
+                    -1)  # Indices of points in voxels
+                if len(selected_voxels) > 0:
+                    logits_for_label = preds[selected_voxels, i]  # Gather logits for the selected points
+                    majority_logits[mask_for_label] = logits_for_label
+
+            # Compute mean logit for each voxel by averaging over valid points
+            valid_point_counts = valid_points_mask.sum(dim=1).clamp(min=1)  # Prevent division by zero
+            mean_logit = majority_logits.sum(dim=1) / valid_point_counts
+
+            # Sort by mean logit
+            _, voxel_indices = torch.sort(mean_logit, descending=False)
+
+            # Continue as in your original code
+            index = voxel_indices[mask[point_in_voxel[voxel_indices][:, 0]] == False]
+            mask[point_in_voxel[index[:self.select_num]]] = True
+            mask[-1] = False
+            return mask
+        else:
+            raise NotImplementedError
+
+class Logit_Select_Reverse_variance:
+    def __init__(self,
+                 select_num: int = 1,
+                 num_classes: int = 20,
+                 select_method: str = 'voxel',
+                 voxel_size: float = 0.25,
+                 max_points_per_voxel: int = 100,
+                 voxel_select_method: str = 'max'):
+        self.select_num = select_num
+        self.select_method = select_method
+        self.voxel_size = voxel_size
+        self.max_points_per_voxel = max_points_per_voxel
+        self.num_classes = num_classes
+
+    def select(self, mask, raw_coord=None, preds=None, true_label=None, stacked_out=None):
+        if self.select_method == 'voxel':
+            voxelized_coordinates, voxel_idx, inverse, point_in_voxel, voxel_point_counts = get_point_in_voxel(
+                raw_coord, self.voxel_size, self.max_points_per_voxel)
+
+            preds_label = preds.max(dim=-1).indices
+            # class_num_count_cpu = preds_label.cpu()  # Move to CPU
+            # class_num_count_numpy = class_num_count_cpu.numpy()
+            point_in_voxel_label = torch.where(point_in_voxel != -1, preds_label[point_in_voxel], -1)
+            point_in_voxel_label_true = torch.where(point_in_voxel != -1, true_label[point_in_voxel], -1)
+
+            class_num_count = torch.zeros((point_in_voxel_label.shape[0], self.num_classes + 1),
+                                          device=preds_label.device, dtype=torch.int)
+            max_number_of_point_per_voxel = point_in_voxel_label.size(1)
+
+            # class_num_count_cpu = point_in_voxel_label.cpu()  # Move to CPU
+            # class_num_count_numpy = class_num_count_cpu.numpy()
+            for i in range(1, self.num_classes + 1):
+                class_num_count_i = torch.where(point_in_voxel_label == i, 1, 0)
+                class_num_count_i = torch.sum(class_num_count_i, dim=1)
+                class_num_count[:, i] = class_num_count_i
+            max_values, max_index = torch.max(class_num_count, dim=1, keepdim=True)
+            mean_logit = []
+            for i in range(len(max_index)):
+                majarity_label = max_index[i][0]
+                voxel_point_tracker = point_in_voxel[i]
+                average_logit = []
+                for element in voxel_point_tracker:
+                    if element != -1:
+                        current_logit = stacked_out[element]
+                        average_logit.append(current_logit[majarity_label])
+                    if element == -1:
+                        break
+                mean_logit.append(sum(average_logit) / len(average_logit))
+
+            mean_logit = torch.stack(mean_logit)
+
+            _, voxel_indices = torch.sort(mean_logit, descending=True)
+            index = voxel_indices[mask[point_in_voxel[voxel_indices][:, 0]] == False]
+            mask[point_in_voxel[index[:self.select_num]]] = True
+            mask[-1] = False
+            return mask
         else:
             raise NotImplementedError
 
