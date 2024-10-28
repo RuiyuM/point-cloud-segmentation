@@ -14,6 +14,7 @@ import torch.nn as nn
 from torch.nn.utils import clip_grad_norm_
 from torch.cuda import amp
 import torchsparse
+from torchsparse import SparseTensor
 import torchsparse.nn
 import torchsparse.nn.functional
 from annotator.data import build_dataloader
@@ -468,17 +469,19 @@ class Trainer:
                         name = batch['name'][i]
                         if if_active:
                             pseudo_voxel_label = voxel_predict_logits_active.max(dim=-1).indices
-                            # loss = network_loss(voxel_predict_logits, pseudo_voxel_label)
-                            params = {k: v.detach() for k, v in self.model.named_parameters()}
-                            buffers = {k: v.detach() for k, v in self.model.named_buffers()}
-                            ft_compute_grad = grad(compute_loss)
-
-                            ft_compute_sample_grad = vmap(ft_compute_grad, in_dims=(None, None, 0, 0))
-
-                            ft_per_sample_grads = ft_compute_sample_grad(params, buffers, batch, pseudo_voxel_label, self.model, loss_fn)
-
+                            # pseudo_voxel_label_test = pseudo_voxel_label[:2]
+                            # one_batch_F = batch['lidar'].F[:2]
+                            # one_batch_C = batch['lidar'].C[:2]
+                            # new_sparse_tensor = SparseTensor(one_batch_F, one_batch_C)
+                            # one_batch_new = {}
+                            # one_batch_new['lidar'] = new_sparse_tensor
+                            # ret_dict_test = self.model(one_batch_new, is_active=True, is_training=True)
+                            # loss = loss_fn(ret_dict_test['stacked_predict_logits'], pseudo_voxel_label_test)
+                            loss = network_loss(ret_dict['stacked_predict_logits'], pseudo_voxel_label)
+                            # grad_test = torch.autograd.grad(loss, list(self.model.parameters()))
+                            loss.backward()
                             # self.scaler.scale(loss).backward()
-                            # xxx = self.model.up4[1][0].net[0]
+                            xxx = self.model.up4[1][1].net[0].kernel.grad
                             # classifier_gradients = self.model.up4[1][0].net[0].kernel.grad
                             # new_gradients = self.model.classifier[0].weight.grad
                             with torch.no_grad():
@@ -487,7 +490,8 @@ class Trainer:
                                 stacked_out_i = voxel_preds_i[batch['inverse_map'][i]]
                                 # voxel_preds_i = voxel_predict_logits_active[batch['targets'].C[:, 3] == i]
                                 # preds_i = voxel_preds_i[batch['inverse_map'][i]]
-
+                                pseudo_voxel_label_current = pseudo_voxel_label[batch['targets'].C[:, 3] == i]
+                                pseudo_voxel_label_1 = pseudo_voxel_label_current[batch['inverse_map'][i]]
                                 voxel_preds_i = voxel_predict_logits_active[batch['targets'].C[:, 3] == i]
                                 preds_i = voxel_preds_i[batch['inverse_map'][i]]
                                 voxel_true_i = voxel_label[batch['targets'].C[:, 3] == i]
