@@ -381,13 +381,15 @@ class MinkNet(BaseSegmentor):
         x = batch_dict['lidar']
         x.F = x.F[:, :self.in_feature_dim]
         averaged_tensor = None
+        stacked_out = None
+        features_before_classifier = None
         x0 = self.stem(x)
         x1 = self.stage1(x0)
         x2 = self.stage2(x1)
         x3 = self.stage3(x2)
         x4 = self.stage4(x3)
 
-        x4.F = self.dropout(x4.F)
+        x4.F = self.dropout(x4.F)  # Apply dropout during forward pass
         y1 = self.up1[0](x4)
         y1 = torchsparse.cat([y1, x3])
         y1 = self.up1[1](y1)
@@ -404,29 +406,25 @@ class MinkNet(BaseSegmentor):
         y4 = self.up4[0](y3)
         y4 = torchsparse.cat([y4, x0])
         y4 = self.up4[1](y4)
-
+        features_before_classifier = y4.F
         out = self.classifier(y4.F)
 
-        if is_active:
-            out_list = [out.detach()]  # Detach 'out' to use it as a base value that doesn't affect gradients
-            dropout = nn.Dropout(p=0.3, inplace=False)  # Initialize dropout
-            for i in range(5 - 1):
-                # new_out = self.classifier(y4.F.detach())  # Detach y4.F to prevent gradients from flowing back
-                # new_out = dropout(new_out)  # Apply dropout to the output
-                dropped_out = dropout(y4.F.detach())  # Detach y4.F and apply dropout
 
-                # Pass the dropout-modified output to the classifier
-                new_out = self.classifier(dropped_out)
+        out_list = [out]  # Do not detach here if you need gradients
+        dropout = nn.Dropout(p=0.3, inplace=False)
+        for i in range(5 - 1):
+            dropped_out = dropout(y4.F)  # Apply dropout, do not detach
+            new_out = self.classifier(dropped_out)  # Classifier without detaching
+            out_list.append(new_out)  # Append non-detached outputs
 
-                # Append the result to the list
-                out_list.append(new_out.detach())
-            stacked_out = torch.stack(out_list, 0)
-            # # average logit
-            # averaged_tensor = torch.mean(stacked_out, dim=0).detach()  # Ensure the result is detached
-            averaged_tensor = stacked_out
+        stacked_out = torch.stack(out_list, 0)
+        averaged_tensor = torch.mean(stacked_out, dim=0)  # Average logits
+
         return {'network_loss': self.criterion_losses,
                 'voxel_predict_logits': out,
-                'stacked_predict_logits': averaged_tensor
+                'stacked_predict_logits': averaged_tensor,
+                'stacked_logits': stacked_out,
+                'features': features_before_classifier
                 }
 
     def forward_ensemble(self, batch_dict):
