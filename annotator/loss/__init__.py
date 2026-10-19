@@ -71,6 +71,9 @@ class Losses(nn.Module):
         )
 
     def forward(self, input, target, xyz=None, offset=None):
+        # self.ce_loss.reduction = 'none'
+
+
 
         loss_dict = {}
         if 'WCELoss' in self.loss_types:

@@ -306,7 +306,7 @@ class Trainer:
                                             voxel_size=self.active_voxel_size,
                                             max_points_per_voxel=self.max_points_per_voxel,
                                             voxel_select_method=cfgs.ACTIVE.VOXEL_SELECT_METHOD)
-        elif self.active_method == 'VCD_ST':
+        elif self.active_method == 'VCD_collect':
             self.active_sampler = VCDSelect_statistic(select_num=self.select_num,
                                             num_classes=self.num_classes,
                                             select_method=self.select_method,
@@ -532,7 +532,7 @@ class Trainer:
                                                                                    voxel_size=self.active_voxel_size,
                                                                                    max_points_per_voxel=self.max_points_per_voxel,
                                                                                    voxel_select_method=cfgs.ACTIVE.VOXEL_SELECT_METHOD)
-                                        self.masks[name], true_stat, pre_stat, true_selected_label_count = self.active_sampler.select(
+                                        self.masks[name], true_stat, pre_stat, true_selected_label_count, _ = self.active_sampler.select(
                                             self.masks[name], batch['raw_coord'][i],
                                             preds_i, true_i, self.selected_class_count, features_before_c_1)
                                         self.point_cloud_stat_true.append(true_stat[0])
@@ -544,7 +544,7 @@ class Trainer:
                                         current_count = point_count.sum()
                                         if current_count >= 6000:
                                             if_active = False
-                                if self.active_method == 'VCD_ST':
+                                if self.active_method == 'VCD_collect':
                                     if self.selected_class_count is None:
                                         if All_true_selected_label_count is None:
                                             All_true_selected_label_count = true_selected_label_count
@@ -656,13 +656,10 @@ class Trainer:
                 pbar.set_postfix(dict(total_it=self.it))
                 tbar.set_postfix(disp_dict)
                 tbar.refresh()
-
-        if if_active and self.active_method == 'VCD_ST':
-
-
+        if if_active == True:
             # Construct the directory paths
             log_dir = cfgs.ROOT_DIR / 'logs' / cfgs.EXP_GROUP_PATH / cfgs.TAG / self.active_method
-            ckp_dir = log_dir / 'stats' / str(self.active_times)
+            ckp_dir = log_dir / 'stats' / str(self.cur_epoch)
 
             # Create the directory if it doesn't exist
             os.makedirs(ckp_dir, exist_ok=True)
@@ -678,6 +675,28 @@ class Trainer:
             # Save the tensor
             with open(file_path, 'wb') as f:
                 pickle.dump(self.point_cloud_stat_pre, f)
+
+        # if if_active and self.active_method == 'VCD_collect':
+        #
+        #
+        #     # Construct the directory paths
+        #     log_dir = cfgs.ROOT_DIR / 'logs' / cfgs.EXP_GROUP_PATH / cfgs.TAG / self.active_method
+        #     ckp_dir = log_dir / 'stats' / str(self.active_times)
+        #
+        #     # Create the directory if it doesn't exist
+        #     os.makedirs(ckp_dir, exist_ok=True)
+        #
+        #     # File path where the tensor will be saved
+        #     file_path = ckp_dir / 'states_true.pkl'
+        #
+        #     # Save the tensor
+        #     with open(file_path, 'wb') as f:
+        #         pickle.dump(self.point_cloud_stat_true, f)
+        #     file_path = ckp_dir / 'states_pre.pkl'
+        #
+        #     # Save the tensor
+        #     with open(file_path, 'wb') as f:
+        #         pickle.dump(self.point_cloud_stat_pre, f)
 
         if self.rank == 0:
             pbar.close()
@@ -814,6 +833,7 @@ class Trainer:
 
             for cur_epoch in tbar:
                 self.point_cloud_stat_true = []
+                self.voxel_stat = []
                 self.point_cloud_stat_pre = []
                 self.cur_epoch = cur_epoch
                 self.train_one_epoch(tbar, self.cfgs.DATA)
@@ -874,7 +894,7 @@ def main():
             name=f'{proctitle}-{cfgs.ACTIVE.ACTIVE_METHOD}_{args.extra_tag}',
             entity=cfgs.WANDB.ENTITY_NAME,
         )
-    # args.extra_tag = args.set_cfgs[-1]
+    args.extra_tag = args.set_cfgs[-1]
     trainer = Trainer(args, cfgs)
 
     if args.eval:

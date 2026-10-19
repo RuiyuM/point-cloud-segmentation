@@ -1,0 +1,755 @@
+{
+  "captured_utc": "2026-10-19T16:54:07.014941+00:00",
+  "source": "Annotator server working tree, including uncommitted source files",
+  "source_git_head": "6a37ac1eeb9038afb5b7e25f2695d6a2c9ca3b2f",
+  "included_roots": [
+    "top-level source files",
+    "annotator",
+    "tools",
+    "configs",
+    "docs text"
+  ],
+  "excluded": [
+    "datasets",
+    "checkpoints",
+    "logs",
+    "prediction outputs",
+    "caches",
+    "IDE files",
+    "vendored packages",
+    "nested repository copies",
+    "binary documentation"
+  ],
+  "files": [
+    {
+      "path": "LICENSE",
+      "bytes": 11357,
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    },
+    {
+      "path": "README.md",
+      "bytes": 309,
+      "sha256": "2ff074ec91c847f9066e94a3c950ff7f86ede318f8f904a4fa1698af7c723136"
+    },
+    {
+      "path": "annotator/__init__.py",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "annotator/active/sampler.py",
+      "bytes": 266697,
+      "sha256": "323af2e7bb8e64ab625658774335254577636105978c5b3d2b1efd0c04894852"
+    },
+    {
+      "path": "annotator/data/__init__.py",
+      "bytes": 3838,
+      "sha256": "8ce1f97b1a788003b0980a6f4adc66d82789dbc2d941dd15c43ffd44d9816e67"
+    },
+    {
+      "path": "annotator/data/dataset/__init__.py",
+      "bytes": 105,
+      "sha256": "e3a5ff9c250df0cefe43a654cf87788ac357f086da1ffbb9074233afe5987a57"
+    },
+    {
+      "path": "annotator/data/dataset/base.py",
+      "bytes": 9414,
+      "sha256": "8037baa2cc579b232a6a812a10b1cf6ec3e84dc8ab18bade93fe013a3235d68d"
+    },
+    {
+      "path": "annotator/data/dataset/nuscenes/__init__.py",
+      "bytes": 79,
+      "sha256": "5ed55a76ba860ed9fa7ff470809204e412aa7b312b725ddb24ddcb839cb9aa9e"
+    },
+    {
+      "path": "annotator/data/dataset/nuscenes/nusc.py",
+      "bytes": 3556,
+      "sha256": "daa1fd1514d2f85cc4baab9329c821fad6c0e45261578f770834298bffc85d72"
+    },
+    {
+      "path": "annotator/data/dataset/nuscenes/nuscenes.py",
+      "bytes": 4605,
+      "sha256": "80a9df6188d13aed8ba68f3a81e71a032d7a14c2c878fa05ec57c1a50202e824"
+    },
+    {
+      "path": "annotator/data/dataset/nuscenes/nuscenes_utils.py",
+      "bytes": 23692,
+      "sha256": "e9aca2be3767fc0f81cb4a5bf10fa579a2197229d984404321b9623b84ef15b3"
+    },
+    {
+      "path": "annotator/data/dataset/nuscenes/nuscenes_voxel.py",
+      "bytes": 6649,
+      "sha256": "3653b8d1a3987428f178d1c45b2c3cd61bdcbf272fa9186e8e4adee2cbdf56df"
+    },
+    {
+      "path": "annotator/data/dataset/semantickitti/__init__.py",
+      "bytes": 102,
+      "sha256": "1853d936f38565d5b295b4648863cc698a530915ba6d0f4870a22c70343a3c90"
+    },
+    {
+      "path": "annotator/data/dataset/semantickitti/semantickitti.py",
+      "bytes": 5693,
+      "sha256": "336f89c13a94d1c021769a68951ac77bf76d081cc23aa4777eb0d252b69da642"
+    },
+    {
+      "path": "annotator/data/dataset/semantickitti/semantickitti.yaml",
+      "bytes": 5539,
+      "sha256": "c39f77a2ca297f5dd43c4b5da09f343fcd0bbfeac8b923a823e14d5cd87adb62"
+    },
+    {
+      "path": "annotator/data/dataset/semantickitti/semantickitti_utils.py",
+      "bytes": 9486,
+      "sha256": "f5b6689a0c6933f74451385ee25412c33fd2a7641005463376627c197b4e3d5d"
+    },
+    {
+      "path": "annotator/data/dataset/semantickitti/semantickitti_voxel.py",
+      "bytes": 6810,
+      "sha256": "9b5937e6da474afe6b1123633efd6cfec093268aba88d6a28bf9d3281a616cb2"
+    },
+    {
+      "path": "annotator/data/dataset/semanticposs/__init__.py",
+      "bytes": 97,
+      "sha256": "bfa88f463bdb9a44e470926e2d52993042260e04c760e8ea43d3198067a61155"
+    },
+    {
+      "path": "annotator/data/dataset/semanticposs/laserscan.py",
+      "bytes": 15000,
+      "sha256": "f2784681106594de84964d9e7fbeb05c48965a80be94528279a35ab7736cd0bf"
+    },
+    {
+      "path": "annotator/data/dataset/semanticposs/semanticposs.py",
+      "bytes": 3971,
+      "sha256": "56786cd76297b0c6adf643f5be22f34faaa54e7e22440b852cb6888547fb4266"
+    },
+    {
+      "path": "annotator/data/dataset/semanticposs/semanticposs_utils.py",
+      "bytes": 1457,
+      "sha256": "3d2c7b18e02a14afaacc411701763f70e838a3c20ced9f97668c5c4e833f4de9"
+    },
+    {
+      "path": "annotator/data/dataset/semanticposs/semanticposs_voxel.py",
+      "bytes": 6358,
+      "sha256": "6ef269697f91cb9c9adec8d2610c49373ec300b91541717b16af41db147020a7"
+    },
+    {
+      "path": "annotator/data/dataset/synlidar/__init__.py",
+      "bytes": 86,
+      "sha256": "3cc807449ec79c99edcbf84fa1e8a657f61fbc8852f86a59455363cc90b4900a"
+    },
+    {
+      "path": "annotator/data/dataset/synlidar/synlidar.py",
+      "bytes": 5842,
+      "sha256": "019cf14540d47ece17f9d2a3bc29b0d2d662f74ca7a731089b81059f04280d3d"
+    },
+    {
+      "path": "annotator/data/dataset/synlidar/synlidar_bev.py",
+      "bytes": 10039,
+      "sha256": "ff8701bdbdda8af9b2c5cac012877fddc2d439a3127eef6e290b8b1c993d6a49"
+    },
+    {
+      "path": "annotator/data/dataset/synlidar/synlidar_utils.py",
+      "bytes": 4847,
+      "sha256": "ffa959c93decc0e2e2da21214c8b1fe3fe92e35419b157270400d1b9ef1daa5d"
+    },
+    {
+      "path": "annotator/data/dataset/synlidar/synlidar_voxel.py",
+      "bytes": 6569,
+      "sha256": "5f1a5422e6bd8cdb1402313440401674a0d7be4d4c6a93bdcd29df90b13a5cfb"
+    },
+    {
+      "path": "annotator/loss/__init__.py",
+      "bytes": 4336,
+      "sha256": "66c62425286f2cb11116809df6752702304fd75e41ac0becc9fcb18632e5a124"
+    },
+    {
+      "path": "annotator/loss/dice_loss_v0.py",
+      "bytes": 3015,
+      "sha256": "c21f316dc946dea24b4d63dbf731fec6ced9a0f3fd44061208dc178cf8928ae3"
+    },
+    {
+      "path": "annotator/loss/dice_loss_v1.py",
+      "bytes": 3699,
+      "sha256": "bf6599fcf9ae6b1e139a25d2307d95b7e41ad96fb6b98df4a6b51bd6e328131d"
+    },
+    {
+      "path": "annotator/loss/ell_loss.py",
+      "bytes": 4204,
+      "sha256": "bd894ee4742465096a72a37524d4cf8c39bc13d93e7717e114c5acc4fe04f08b"
+    },
+    {
+      "path": "annotator/loss/eqlv2.py",
+      "bytes": 4972,
+      "sha256": "71a62f558b75cab470761e96b433614a5be8e15e5b4c6a786ce9edb0cdd1fa09"
+    },
+    {
+      "path": "annotator/loss/focalloss.py",
+      "bytes": 1844,
+      "sha256": "d26662ae237540cf5e3458e6c77c419d689ce3e3104ce548a947536be9cf7830"
+    },
+    {
+      "path": "annotator/loss/geo_loss.py",
+      "bytes": 2142,
+      "sha256": "0742e689939782e2fff6a8a517420721269bde038db16ae41823874d5c436e70"
+    },
+    {
+      "path": "annotator/loss/group_softmax.py",
+      "bytes": 10561,
+      "sha256": "7fb0a7c03cb7ebb25c841f95849cff146365b3ee7a724de6f68dac6ad7d97c59"
+    },
+    {
+      "path": "annotator/loss/group_softmax_fgbg_2.py",
+      "bytes": 9831,
+      "sha256": "a2b332feb8fd1a6b8c0a09b3af6c4ff739e199f6634ca834148bfc2a4c563c47"
+    },
+    {
+      "path": "annotator/loss/wce_loss.py",
+      "bytes": 1211,
+      "sha256": "6c8fe9767c8614261ea25eae9769c4a0591810cab9d31adb286ba0f0d94b943b"
+    },
+    {
+      "path": "annotator/model/__init__.py",
+      "bytes": 1676,
+      "sha256": "fa2c0cfde6050f5c2057271e11236c346ce4974546a5d85f95af61c77de3a1a1"
+    },
+    {
+      "path": "annotator/model/segmentor/__init__.py",
+      "bytes": 310,
+      "sha256": "69192401c67d52ae87e126bb48f68761e3c702d4eaa3465836a75f5ed46aca7d"
+    },
+    {
+      "path": "annotator/model/segmentor/base_segmentors.py",
+      "bytes": 1380,
+      "sha256": "871bc8ab82710ab8aeaee06be88e5395ea9c118668a81239e9fdcde2035ce43b"
+    },
+    {
+      "path": "annotator/model/segmentor/bev/polarnet/__init__.py",
+      "bytes": 30,
+      "sha256": "22ff57acda3f9cb7ce9187e2ff587127f515e020096118dba4e1908f68687fb7"
+    },
+    {
+      "path": "annotator/model/segmentor/bev/polarnet/bev_unet.py",
+      "bytes": 8363,
+      "sha256": "9ac26595ed37845a68755f4e697208577f1eb0ee7b9d8801ff5ca0d12fb97be7"
+    },
+    {
+      "path": "annotator/model/segmentor/bev/polarnet/polarnet.py",
+      "bytes": 8759,
+      "sha256": "5b8f370732858433f59c793911c22cbc20795c2da5d93f42ef6c9c00f0aac3ee"
+    },
+    {
+      "path": "annotator/model/segmentor/voxel/minknet/__init__.py",
+      "bytes": 29,
+      "sha256": "6c4558872b23203c776b16aa48e2e2a70b1bfc7f9b42e735dc7244ce54b521b8"
+    },
+    {
+      "path": "annotator/model/segmentor/voxel/minknet/minknet.py",
+      "bytes": 13901,
+      "sha256": "17ee94c6b2fb1c8454f112e24c6423311d030f1735a0c1260c4544fd2fd73d72"
+    },
+    {
+      "path": "annotator/model/segmentor/voxel/minknet/minknet_old.py",
+      "bytes": 12628,
+      "sha256": "7a85a8aeaa0ae574f7357fbb340d2a4f1f8a65074e8723e0f03ffe4267aa0142"
+    },
+    {
+      "path": "annotator/model/segmentor/voxel/minknet/utils.py",
+      "bytes": 3860,
+      "sha256": "47e9acb214025e091be02e7e6496e20974e086d92e6ec8292d4e8a67783d0f0e"
+    },
+    {
+      "path": "annotator/model/segmentor/voxel/spvcnn/__init__.py",
+      "bytes": 27,
+      "sha256": "201a2edbedb8dd5587a5df65ea5a96c2e41978fee29fe7a4eadfd0afb1c0f0b1"
+    },
+    {
+      "path": "annotator/model/segmentor/voxel/spvcnn/spvcnn.py",
+      "bytes": 15453,
+      "sha256": "025c94fa8dcb10c57c46d46fd642bbbd802f22b554d147865cfd1b43183f7510"
+    },
+    {
+      "path": "annotator/model/segmentor/voxel/spvcnn/utils.py",
+      "bytes": 3860,
+      "sha256": "47e9acb214025e091be02e7e6496e20974e086d92e6ec8292d4e8a67783d0f0e"
+    },
+    {
+      "path": "annotator/optim/__init__.py",
+      "bytes": 6331,
+      "sha256": "a2715d222b769ba3ca0247e739cf2efd87299cbcaa8a64f5aa87c3f88a58d732"
+    },
+    {
+      "path": "annotator/optim/fastai_optim.py",
+      "bytes": 10559,
+      "sha256": "e14edc15776b1bfad28a0d9ec78e341da4f32799a5c2596e3b5874c389ec7fe5"
+    },
+    {
+      "path": "annotator/optim/learning_schedules_fastai.py",
+      "bytes": 3965,
+      "sha256": "f5a11ec6a38b0069897e529ed4215979e023a91e2e7595d7b77fed2ccd0bc73a"
+    },
+    {
+      "path": "configs/ada/minknet/kitti2nus.yaml",
+      "bytes": 1533,
+      "sha256": "404ffbb81b99373e4451c22f2dcc0aaec85611dcbddad3144d6dc66de654692f"
+    },
+    {
+      "path": "configs/ada/minknet/nus2kitti.yaml",
+      "bytes": 1563,
+      "sha256": "9dbf471ac90abe0f81b6dcae44b1118cf824320f212f33e8a2e1931b681667fd"
+    },
+    {
+      "path": "configs/ada/minknet/syn2kitti.yaml",
+      "bytes": 1576,
+      "sha256": "9737da34c238e9e0c242883f38705f452d3d59b1c9981d9f4a77700f3390ad81"
+    },
+    {
+      "path": "configs/ada/minknet/syn2poss.yaml",
+      "bytes": 1570,
+      "sha256": "d9c35532a12cf607939a87806ec0852bcaef70013585b4f410ae8f7525275fc7"
+    },
+    {
+      "path": "configs/ada/spvcnn/kitti2nus.yaml",
+      "bytes": 1532,
+      "sha256": "21a9647eb914a313177d6e252ed76203a8b1b73dd66cf246aeb51de73a4abbe9"
+    },
+    {
+      "path": "configs/ada/spvcnn/nus2kitti.yaml",
+      "bytes": 1562,
+      "sha256": "eac9cc877c8b1d93a02deeb5546dbe880263c5a7f54ec309897c1fad62ecac87"
+    },
+    {
+      "path": "configs/ada/spvcnn/syn2kitti.yaml",
+      "bytes": 1719,
+      "sha256": "0f4df51c0d18ce571c237baf5a10a6e7d19f4e1642d00197e7e6ac23806370e7"
+    },
+    {
+      "path": "configs/ada/spvcnn/syn2poss.yaml",
+      "bytes": 1569,
+      "sha256": "e0a440779dda878ea43b7e1887d059b6bdc155adf5e457eae31874c6110ced15"
+    },
+    {
+      "path": "configs/al/minknet/kitti2nus.yaml",
+      "bytes": 1169,
+      "sha256": "1a49cf483c8b5b3fb8d7586357f303795d687792ade36fb3a80c30c22cc0e128"
+    },
+    {
+      "path": "configs/al/minknet/nus2kitti.yaml",
+      "bytes": 1255,
+      "sha256": "2122ce5f987acc239b8cc7bb3e9a5d768eb3ff2bd7e6857662ace4373331db32"
+    },
+    {
+      "path": "configs/al/minknet/syn.yaml",
+      "bytes": 1195,
+      "sha256": "c7172321ae3abb7b38110f080029bfdf828ce50a06cc8d18cb71b20d18571843"
+    },
+    {
+      "path": "configs/al/minknet/syn2kitti.yaml",
+      "bytes": 1208,
+      "sha256": "a9721678e76149fe9a6962f14adab5d40d1397030ae56b11038004e14c76aee4"
+    },
+    {
+      "path": "configs/al/minknet/syn2poss.yaml",
+      "bytes": 1214,
+      "sha256": "d8c17d149c7418ed9c55548b574319835f4cb08c6b4898c78fd735581405a44c"
+    },
+    {
+      "path": "configs/al/spvcnn/kitti2nus.yaml",
+      "bytes": 1163,
+      "sha256": "f8c2cab2df52e41aa2ee1f55f56631ba6561ac8637f70ea4003b2c5b5ed0393d"
+    },
+    {
+      "path": "configs/al/spvcnn/nus2kitti.yaml",
+      "bytes": 1206,
+      "sha256": "194b2ee84e654a94c1b0e2bdb53faba8a02fd140471ae5da9e82f7f4511a582b"
+    },
+    {
+      "path": "configs/al/spvcnn/syn2kitti.yaml",
+      "bytes": 1206,
+      "sha256": "d2cef6221b0ad1bf1539364d526dd6b4433194fe6888531da44c3ca7227ae5bf"
+    },
+    {
+      "path": "configs/al/spvcnn/syn2poss.yaml",
+      "bytes": 1203,
+      "sha256": "70b08c6c2c8c3a4e7443e26c107733fa60410d3c3f10700193819f049670d685"
+    },
+    {
+      "path": "configs/fully/minknet/kitti2nus_src.yaml",
+      "bytes": 936,
+      "sha256": "62260723ee4a73a08fa89aa6660695274a0a4d5cdec785c6e8d4ccabcf7d9c27"
+    },
+    {
+      "path": "configs/fully/minknet/kitti2nus_tgt.yaml",
+      "bytes": 914,
+      "sha256": "e76d4216dbf1871d7868c6c66e49d72d4bbace5aa63f8af18efdc9d5c92f129f"
+    },
+    {
+      "path": "configs/fully/minknet/nus2kitti_src.yaml",
+      "bytes": 934,
+      "sha256": "80b1efc1258f061469a7b6d7644784304093ef5090328e6f0f1e1ea976447151"
+    },
+    {
+      "path": "configs/fully/minknet/nus2kitti_tgt.yaml",
+      "bytes": 953,
+      "sha256": "60a618537e68f059e2452b69fdc302c1fe9450f704a54956f6f5c22d1cd140f0"
+    },
+    {
+      "path": "configs/fully/minknet/syn2kitti_src.yaml",
+      "bytes": 944,
+      "sha256": "45f5a674a65ce4e06a75c0428bccd4562bd265b69c85b27a4000cadf398ad06b"
+    },
+    {
+      "path": "configs/fully/minknet/syn2kitti_tgt.yaml",
+      "bytes": 955,
+      "sha256": "90fc139c7e95a3ce81edab7dd19534f4260b97c7ad2858aff6c66d9cebc739af"
+    },
+    {
+      "path": "configs/fully/minknet/syn2poss_src.yaml",
+      "bytes": 951,
+      "sha256": "f995e4fc7c1020f488f60838d334c85cc26021dad71aebf3a206abcb6098f62d"
+    },
+    {
+      "path": "configs/fully/minknet/syn2poss_tgt.yaml",
+      "bytes": 959,
+      "sha256": "391066e3f8edebc30e45d2149b856fb7937c8faa78928dd019a45835489de9d0"
+    },
+    {
+      "path": "configs/fully/spvcnn/kitti2nus_src.yaml",
+      "bytes": 936,
+      "sha256": "b3f39aed2f5f0ec7e78a71464a6704fbc3da746d504d1530deb1aaabc51c6bf7"
+    },
+    {
+      "path": "configs/fully/spvcnn/kitti2nus_tgt.yaml",
+      "bytes": 914,
+      "sha256": "908283da2308e4da064af26489fdb33f8b9ca4c17fd7cb92b6a8830da866f63a"
+    },
+    {
+      "path": "configs/fully/spvcnn/nus2kitti_src.yaml",
+      "bytes": 933,
+      "sha256": "3c8de108359cb12df9cc33816f2d519f728ce6b4bc6c671016cddb7b611c3924"
+    },
+    {
+      "path": "configs/fully/spvcnn/nus2kitti_tgt.yaml",
+      "bytes": 952,
+      "sha256": "98a9c4d434697012a626478c192428adb8282f6e1ff546f20857f0f214d2fc7f"
+    },
+    {
+      "path": "configs/fully/spvcnn/syn2kitti_src.yaml",
+      "bytes": 943,
+      "sha256": "bf027ac5c013693497d563ed6710be9db31dc63877817dede868d267546e3cf8"
+    },
+    {
+      "path": "configs/fully/spvcnn/syn2kitti_tgt.yaml",
+      "bytes": 953,
+      "sha256": "ca3b14915b821475d2d633e9bf9a13d7fcd7c3d3ab6fb794df824d461acaabaf"
+    },
+    {
+      "path": "configs/fully/spvcnn/syn2poss_src.yaml",
+      "bytes": 942,
+      "sha256": "5edd93ae186c669313252cc4614a8653214963ed6bf1798f149daca93c40f258"
+    },
+    {
+      "path": "configs/fully/spvcnn/syn2poss_tgt.yaml",
+      "bytes": 950,
+      "sha256": "11d0bee3c9ed2c8702318f158a6d235ae633db24802dc888ae045dfcc184efc9"
+    },
+    {
+      "path": "cuda_try.py",
+      "bytes": 2676,
+      "sha256": "c8dd35096af6bd01d4dbc0a6c3f34d6a57457411abf53f4ef247efcd0615ad45"
+    },
+    {
+      "path": "cuda_try_2.py",
+      "bytes": 3343,
+      "sha256": "1609d3cadcf9d848985d9e4f0180924bca1711a7e3c9154f61da67b09eaf2c70"
+    },
+    {
+      "path": "docs/DATA.md",
+      "bytes": 3581,
+      "sha256": "1f2509395f59e53f7ea3a1c60f747e84d750d5ed5c0ea5d400a4a095879581f6"
+    },
+    {
+      "path": "docs/INSTALL.md",
+      "bytes": 2287,
+      "sha256": "76adcd986a841fae2bc01f811b881f34781799ae252ba2d033f29eb62f28a13c"
+    },
+    {
+      "path": "docs/TRAIN_VAL.md",
+      "bytes": 2192,
+      "sha256": "43fa7cd5a4f9afb6dc9a5f23925f20a0414a69508fb90d1248c7e60bf2379914"
+    },
+    {
+      "path": "load_statitsic.py",
+      "bytes": 684,
+      "sha256": "8dd9629274fe28e2fa16f8a2ca6521f0b582dabb549451b3983cbd7f950781f7"
+    },
+    {
+      "path": "minknet_old.py",
+      "bytes": 13787,
+      "sha256": "fa7b93e728eef81ae5564375136597df986fb3bdee6cb9973f42974a72393b13"
+    },
+    {
+      "path": "prediction_generator.py",
+      "bytes": 5976,
+      "sha256": "542b208beb4c466eb28482c31dc7ba8e9afc74edf7e6d6f920d2baf06d29cdfd"
+    },
+    {
+      "path": "tools/_init_path.py",
+      "bytes": 36,
+      "sha256": "8e9d72fac390bdccb67e5fbf38ff834a59784ec6fd109768db8cfc79ba54f16a"
+    },
+    {
+      "path": "tools/utils/common/__init__.py",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "tools/utils/common/common_utils.py",
+      "bytes": 7918,
+      "sha256": "f78ba1370d565b1733f29c313f4fec9ac6e98c1166fe31c8fdf22617e428ee0d"
+    },
+    {
+      "path": "tools/utils/common/commu_utils.py",
+      "bytes": 5319,
+      "sha256": "142120ccc5bc044c069d267b60b0951cda1f3de6ca668298afc98fd60bac66fb"
+    },
+    {
+      "path": "tools/utils/common/lovasz_losses.py",
+      "bytes": 11683,
+      "sha256": "b3ee5deb343b0549ae86bb31e58dfbf7fd4d5745fd6fa7c5869f2bf5ffd9f216"
+    },
+    {
+      "path": "tools/utils/common/seg_utils.py",
+      "bytes": 6385,
+      "sha256": "3f2c0e006bb62e66d2c1322db3393427c5e96a5a75c03b8d0c07b332f7e26d24"
+    },
+    {
+      "path": "tools/utils/train/config.py",
+      "bytes": 2778,
+      "sha256": "5d2b026ea1db24de5027d1f3a58106572af7adc7fd5d0e59d21ad55e952b0f41"
+    },
+    {
+      "path": "tools/utils/train/loss.py",
+      "bytes": 14855,
+      "sha256": "fe3466025da8461a971b1518218343673fa74a5eb63471010264e6bd45593648"
+    },
+    {
+      "path": "tools/utils/train_utils.py",
+      "bytes": 6741,
+      "sha256": "18b54649e5aed65c1cef278ebe731c195d786599760598d014e95b9d869196d0"
+    },
+    {
+      "path": "train.py",
+      "bytes": 25130,
+      "sha256": "297a53565e671c4b29eda873467ef92f2e42e2135267903e826ad898e035c55b"
+    },
+    {
+      "path": "train_active.py",
+      "bytes": 38981,
+      "sha256": "19db47140625ea6e2870138c55fce2a73d8398b8603dcd3441a50331ed40c1c1"
+    },
+    {
+      "path": "train_active_2.py",
+      "bytes": 37041,
+      "sha256": "ffaec3307d3c7f527cd7c0b9b77145ac4034678bdb360ad65e5693522391509c"
+    },
+    {
+      "path": "train_active_EGSLM.py",
+      "bytes": 39790,
+      "sha256": "5bec4dd9745e04b5bdab2e18de043b07c3559003d9f316c0d22649d56f749183"
+    },
+    {
+      "path": "train_active_VCD.py",
+      "bytes": 38876,
+      "sha256": "d9db1d8f99a34077094ec1ab8b9e4b0d37e957e3e5ec42952bb4adfa0337ce57"
+    },
+    {
+      "path": "train_active_VCDEGSLM.py",
+      "bytes": 39830,
+      "sha256": "c55dd99a9d33a79e194422fee255dedb44aa1f23096f8cf333fb2dca2ee07a12"
+    },
+    {
+      "path": "train_active_VCD_variance.py",
+      "bytes": 38600,
+      "sha256": "a6e844e9a8c550dca38f11eef4beecc278a6080a00cf1a2a3675c0ed37b9b9fd"
+    },
+    {
+      "path": "train_active_da.py",
+      "bytes": 28004,
+      "sha256": "7812a28846f6e8f0bece4451e4ba36f42b7a710fe03c4ea6ce41cd2e278eeec3"
+    },
+    {
+      "path": "train_active_density_entropy.py",
+      "bytes": 38906,
+      "sha256": "4d96479f8da20407f0ef2ac78af295050f6b7496be8839d05df8e5df1106b950"
+    },
+    {
+      "path": "train_active_entropy_variance.py",
+      "bytes": 38985,
+      "sha256": "260e9e1bafdb147be8a53fdd82369faab44d4ffefbe394b422ff4b6157b52c75"
+    },
+    {
+      "path": "train_active_feature_extraction.py",
+      "bytes": 41193,
+      "sha256": "39a2012b3bda2d21727d97cb6e767eed87c5f69ebbaf554e5edd2ff019242453"
+    },
+    {
+      "path": "train_active_feature_extraction_majarity.py",
+      "bytes": 41264,
+      "sha256": "5a617a3845a63493e7611e2d52f2f9685852dfa531c64b34939cb9c0eb474d8a"
+    },
+    {
+      "path": "train_active_feature_extraction_psudo_label.py",
+      "bytes": 49819,
+      "sha256": "72c568473bc2a1c079fead19c1c1399d5a0d0a3bc8312073235ed72fb8cbec1f"
+    },
+    {
+      "path": "train_active_final.py",
+      "bytes": 38876,
+      "sha256": "d9db1d8f99a34077094ec1ab8b9e4b0d37e957e3e5ec42952bb4adfa0337ce57"
+    },
+    {
+      "path": "train_active_final_BaSAL.py",
+      "bytes": 41915,
+      "sha256": "76d9e2ee35c365ea3bd2995f0c9aa63532cfb898a7c386288f98d7db3c29139e"
+    },
+    {
+      "path": "train_active_final_LESS_IS_MORE.py",
+      "bytes": 41911,
+      "sha256": "dd9cbe348ec59c0f628276ee257f8a5ae5d2bab694fe215559adf750bd2c7410"
+    },
+    {
+      "path": "train_active_final_LiDAL.py",
+      "bytes": 41915,
+      "sha256": "8265409aa8b49dd12fc9a55ef47e2a7933ae4dec339cef2d1ea2af39f080497f"
+    },
+    {
+      "path": "train_active_final_ReDAL.py",
+      "bytes": 41951,
+      "sha256": "96f60538148379d9320591cb19afb812c87dd6959a31b5f33a28220bcb0e2262"
+    },
+    {
+      "path": "train_active_final_SSDR.py",
+      "bytes": 41921,
+      "sha256": "118ff228cc068032703f5b61a0095a30fdd4af67e51a8dc516f6f61933517fc4"
+    },
+    {
+      "path": "train_active_final_badge.py",
+      "bytes": 42108,
+      "sha256": "149a6b4fde797ca1a814c040ae9f1a59804283a49c9716230c67b656d9445a93"
+    },
+    {
+      "path": "train_active_final_coreset.py",
+      "bytes": 42158,
+      "sha256": "a4fc7cb6639a47dd99c876d0e946769f82a7eccbb18e423ce4724e6694ebf3b2"
+    },
+    {
+      "path": "train_active_final_margin.py",
+      "bytes": 42039,
+      "sha256": "eadadd30fccd30605d466d098bdb519d6924eed641cd119f1efe236a43222e22"
+    },
+    {
+      "path": "train_active_final_milan.py",
+      "bytes": 41915,
+      "sha256": "b2a82b387b3e2e0444162f7b1d68a2e65ece626a0555e6c0faaac71242342e27"
+    },
+    {
+      "path": "train_active_final_random.py",
+      "bytes": 38950,
+      "sha256": "847f72587b939475b5199b02d642883a386b5fe9efb9a439fda91f8493d88b63"
+    },
+    {
+      "path": "train_active_final_random_entropy.py",
+      "bytes": 38783,
+      "sha256": "179d0b8dac5848c42450c13c164e7f01541c86e0b11fb052a965d0e259a0aa09"
+    },
+    {
+      "path": "train_active_final_random_final.py",
+      "bytes": 38950,
+      "sha256": "847f72587b939475b5199b02d642883a386b5fe9efb9a439fda91f8493d88b63"
+    },
+    {
+      "path": "train_active_final_test.py",
+      "bytes": 42879,
+      "sha256": "c8ae0222eeadec56886f7bcefc501ceb8a656d7392c378ef395a44f011d8a055"
+    },
+    {
+      "path": "train_active_final_test_badge.py",
+      "bytes": 41972,
+      "sha256": "0d557e4e18a03803f3e3a3cbc7ddbd7e257c551565ebfb50d2e8e9ee74d3047c"
+    },
+    {
+      "path": "train_active_final_test_collect_info.py",
+      "bytes": 42030,
+      "sha256": "7b80cbd27f255358f06293720878a9d1c7bff89446b8f731d07ac16be648204d"
+    },
+    {
+      "path": "train_active_final_test_corset.py",
+      "bytes": 41669,
+      "sha256": "1803170f74d60a80cec1d82b6e377e86e448e12d7275378450b0382328a12cc9"
+    },
+    {
+      "path": "train_active_final_test_gmm.py",
+      "bytes": 41972,
+      "sha256": "0d557e4e18a03803f3e3a3cbc7ddbd7e257c551565ebfb50d2e8e9ee74d3047c"
+    },
+    {
+      "path": "train_active_final_test_kmeans.py",
+      "bytes": 41978,
+      "sha256": "d6c19223062621d8acbd08da853ced23ad5c200bed09410db6781230449c0edb"
+    },
+    {
+      "path": "train_active_final_test_kmeansplusplus.py",
+      "bytes": 41998,
+      "sha256": "59d7a4115ed5612546de0c160e3c09be75043b64a4e22a44889a1d012ceec26a"
+    },
+    {
+      "path": "train_active_gradient_extraction.py",
+      "bytes": 50365,
+      "sha256": "6ba3a5bddcbc33dcde7972ccab3491eb84f79be0fbade763fc44d36f4d3ac64f"
+    },
+    {
+      "path": "train_active_location_entropy.py",
+      "bytes": 38268,
+      "sha256": "c49d56dd40c21410d09672731498df427c4b250bab0f7ca534ffb15a781a749b"
+    },
+    {
+      "path": "train_active_location_entropy_balancing.py",
+      "bytes": 37669,
+      "sha256": "445a516ed31ec118161baa460b0f104fa981aa2d94bed269702371b6a08138a4"
+    },
+    {
+      "path": "train_active_logit_variance.py",
+      "bytes": 38814,
+      "sha256": "10dcbe8d822ab74bc1554df9dffcbe0ff0ab6ee56f85231cbfbccc7051f1c636"
+    },
+    {
+      "path": "train_active_maj_features.py",
+      "bytes": 40837,
+      "sha256": "9e1809649e80cb5f8d7e17c891e0715266896fce0d7df3af16087a6b4942041a"
+    },
+    {
+      "path": "train_active_overlap_entropy.py",
+      "bytes": 36783,
+      "sha256": "9a8afcfed45ba5bf8414f5793c73cd0695286a66fe94a6e58a41ce879b17b69e"
+    },
+    {
+      "path": "train_active_reverse_logit.py",
+      "bytes": 38809,
+      "sha256": "9d459b7551b9fb9bd820c6d841655c717f3876f0e41ec7a9bdef29ad5ff8b2fc"
+    },
+    {
+      "path": "train_active_reverse_logit_mean.py",
+      "bytes": 39514,
+      "sha256": "5483796f620a8de491839a0d87697d8a1a87cc9ccdf923ade91852e1f621076a"
+    },
+    {
+      "path": "train_active_reverse_logit_mean_entropy.py",
+      "bytes": 39851,
+      "sha256": "783d6a2562dd8e898685d8091e16cb1ec0998455dcf3fd8d6d01766ce4f948f0"
+    },
+    {
+      "path": "train_active_reverse_logit_variance.py",
+      "bytes": 39331,
+      "sha256": "3d0377d326db61edf3175a2ec65d108aa5e5618269bcd5bd5d06b637d78c5af7"
+    }
+  ]
+}

@@ -427,7 +427,7 @@ class Trainer:
                                 voxel_true_i = voxel_label[batch['targets'].C[:, 3] == i]
                                 true_i = voxel_true_i[batch['inverse_map'][i]]
                                 # if not self.selected_class_count:
-                                if self.active_times == 6:
+                                if self.active_times == 5:
                                     self.active_sampler = RandomSelect(select_num=self.select_num,
                                                                        num_classes=self.num_classes,
                                                                        select_method=self.select_method,

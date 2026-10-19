@@ -14,6 +14,7 @@ import torch.nn as nn
 from torch.nn.utils import clip_grad_norm_
 from torch.cuda import amp
 import torchsparse
+import torch_scatter
 from torchsparse import SparseTensor
 import torchsparse.nn
 import torchsparse.nn.functional
@@ -23,7 +24,7 @@ from annotator.optim import build_optimizer, build_scheduler
 from tools.utils.common import common_utils, commu_utils
 from tools.utils.train.config import cfgs, cfg_from_list, cfg_from_yaml_file, log_config_to_file
 from tools.utils.train_utils import model_state_to_cpu
-from annotator.active.sampler import RandomSelect, EntropySelect, MarginSelect, VCDSelect, Entropy_Greedy_Select, VCDSelect_statistic, Logit_Select_Reverse
+from annotator.active.sampler import RandomSelect, EntropySelect, MarginSelect, VCDSelect, Entropy_Greedy_Select, VCDSelect_statistic, Logit_Select_Reverse, Features_Entropy_Greedy_Select_Logit_Mean
 import setproctitle
 import wandb
 import pickle
@@ -145,6 +146,39 @@ def parse_config():
 
     return args, cfgs
 
+def torch_unique(x):
+    unique, inverse, counts = torch.unique(x, return_inverse=True, return_counts=True)
+    perm = torch.arange(inverse.size(0), dtype=inverse.dtype, device=inverse.device)
+    inds = torch_scatter.scatter_min(perm, inverse, dim=0)[0]
+    return unique, inds, inverse, counts
+
+def get_point_in_voxel(raw_coord, voxel_size=0.25, max_points_per_voxel=100, filter_ratio=0.01):
+    voxel_grid = (raw_coord / voxel_size).int()
+    hash_tensor = torch.cat((voxel_grid, torch.zeros((voxel_grid.shape[0], 1), device=voxel_grid.device)), dim=1).int()
+    pc_hash = torchsparse.nn.functional.sphash(hash_tensor)
+    sparse_hash, voxel_idx, inverse, voxel_point_counts = torch_unique(pc_hash)
+    voxelized_coordinates = voxel_grid[voxel_idx]
+
+    inverse_sorted, sorted_to_inverse_index = torch.sort(inverse)
+    index = torch.arange(inverse_sorted.shape[0], device=raw_coord.device)
+    first_locate_index = torch_scatter.scatter_min(index, inverse_sorted, dim=0)[0]
+
+    k = int(voxelized_coordinates.shape[0] * filter_ratio)
+    max_voxel_point = min(torch.topk(voxel_point_counts, k=k, largest=True)[0][-1], max_points_per_voxel)
+
+    temp = first_locate_index[:, None] - torch.zeros(max_voxel_point, device=raw_coord.device, dtype=torch.int64)
+    sorted_locate_index = temp + torch.arange(0, max_voxel_point, device=raw_coord.device)
+    point_index_bound = torch.cat((temp, torch.full([1, max_voxel_point], raw_coord.shape[0], device=raw_coord.device)),
+                                  dim=0)[1:]
+    sorted_to_inverse_index_temp = torch.cat((sorted_to_inverse_index, torch.tensor([-1], device=raw_coord.device)),
+                                             dim=0)
+    point_in_voxel = sorted_to_inverse_index_temp[
+        torch.where(point_index_bound > sorted_locate_index, sorted_locate_index, -1)]
+
+    point_in_voxel[inverse[point_in_voxel[:, 0]]] = point_in_voxel.clone()
+
+    voxel_point_counts = torch.clamp(voxel_point_counts, 0, max_voxel_point)
+    return voxelized_coordinates, voxel_idx, inverse, point_in_voxel, voxel_point_counts
 
 class Trainer:
 
@@ -410,6 +444,7 @@ class Trainer:
         return
 
     def train_one_epoch(self, tbar, data_cfg):
+        point_count = None
         self.model.train()
         total_it_each_epoch = len(self.loader)
         dataloader_iter = iter(self.loader)
@@ -469,21 +504,106 @@ class Trainer:
                         name = batch['name'][i]
                         if if_active:
                             pseudo_voxel_label = voxel_predict_logits_active.max(dim=-1).indices
-                            # pseudo_voxel_label_test = pseudo_voxel_label[:2]
-                            # one_batch_F = batch['lidar'].F[:2]
-                            # one_batch_C = batch['lidar'].C[:2]
-                            # new_sparse_tensor = SparseTensor(one_batch_F, one_batch_C)
-                            # one_batch_new = {}
-                            # one_batch_new['lidar'] = new_sparse_tensor
-                            # ret_dict_test = self.model(one_batch_new, is_active=True, is_training=True)
-                            # loss = loss_fn(ret_dict_test['stacked_predict_logits'], pseudo_voxel_label_test)
-                            loss = network_loss(ret_dict['stacked_predict_logits'], pseudo_voxel_label)
-                            # grad_test = torch.autograd.grad(loss, list(self.model.parameters()))
-                            loss.backward()
-                            # self.scaler.scale(loss).backward()
-                            xxx = self.model.up4[1][1].net[0].kernel.grad
-                            # classifier_gradients = self.model.up4[1][0].net[0].kernel.grad
-                            # new_gradients = self.model.classifier[0].weight.grad
+                            stacked_out = stacked_out.to(batch['targets'].F.device)
+                            voxel_preds_i = stacked_out[batch['targets'].C[:, 3] == i]
+                            stacked_out_i = voxel_preds_i[batch['inverse_map'][i]]
+
+                            pseudo_voxel_label_current = pseudo_voxel_label[batch['targets'].C[:, 3] == i]
+                            pseudo_voxel_label_1 = pseudo_voxel_label_current[batch['inverse_map'][i]]
+
+                            voxel_preds_i = voxel_predict_logits_active[batch['targets'].C[:, 3] == i]
+                            preds_i = voxel_preds_i[batch['inverse_map'][i]]
+                            voxel_true_i = voxel_label[batch['targets'].C[:, 3] == i]
+                            true_i = voxel_true_i[batch['inverse_map'][i]]
+                            # if not self.selected_class_count:
+                            # double check this part ( )
+
+                            voxelized_coordinates, voxel_idx, inverse, point_in_voxel, voxel_point_counts = get_point_in_voxel(
+                                batch['raw_coord'][i], 0.25, 100)
+                            preds_label = pseudo_voxel_label_1
+                            # class_num_count_cpu = preds.cpu()  # Move to CPU
+                            # class_num_count_numpy = class_num_count_cpu.numpy()
+                            point_in_voxel_label = torch.where(point_in_voxel != -1, preds_label[point_in_voxel],
+                                                               -1)
+
+                            class_num_count = torch.zeros((point_in_voxel_label.shape[0], self.num_classes + 1),
+                                                          device=preds_label.device, dtype=torch.int)
+                            max_number_of_point_per_voxel = point_in_voxel_label.size(1)
+
+                            # class_num_count_cpu = point_in_voxel_label.cpu()  # Move to CPU
+                            # class_num_count_numpy = class_num_count_cpu.numpy()
+                            for j in range(1, self.num_classes + 1):
+                                class_num_count_i = torch.where(point_in_voxel_label == j, 1, 0)
+                                class_num_count_i = torch.sum(class_num_count_i, dim=1)
+                                class_num_count[:, j] = class_num_count_i
+                            max_values, max_index = torch.max(class_num_count, dim=1, keepdim=True)
+                            # Gather the majority labels for each voxel
+                            majority_labels = max_index.squeeze(1)
+
+                            # Find the maximum point index in point_in_voxel to define the size of point_labels
+                            num_points = point_in_voxel.max().item() + 1  # Assuming points are indexed starting from 0
+
+                            # Initialize point_labels with a default value (e.g., -1) for all possible points
+                            point_labels = torch.full((num_points,), -1, dtype=majority_labels.dtype,
+                                                      device=majority_labels.device)
+
+                            # Flatten point_in_voxel to get a 1D list of all point indices and create a valid mask
+                            flat_point_indices = point_in_voxel.view(-1)
+                            valid_mask = flat_point_indices != -1
+
+                            # Flatten the majority_labels for each point to match flat_point_indices
+                            voxel_labels_for_points = majority_labels.repeat_interleave(
+                                point_in_voxel.size(1)).view(-1)
+
+                            # Assign each point its corresponding voxel label, only where the mask is valid
+                            point_labels[flat_point_indices[valid_mask]] = voxel_labels_for_points[valid_mask]
+
+                            # Initialize pseudo_voxel_label_current_1 with a default value
+                            pseudo_voxel_label_current_1 = torch.full((len(voxel_label),), -1,
+                                                                      dtype=point_labels.dtype,
+                                                                      device=point_labels.device)
+
+                            # Convert inverse_map and pseudo_voxel_label_1 to tensors if they are not
+                            inverse_map_tensor = torch.tensor(batch['inverse_map'][0],
+                                                              device=point_labels.device)
+
+                            pseudo_voxel_label_1_tensor = torch.tensor(point_labels,
+                                                                       device=point_labels.device)
+
+                            # Sort inverse_map_tensor and pseudo_voxel_label_1_tensor by inverse_map to control which occurrence is kept
+                            # Sorting in descending order keeps the last occurrence; ascending keeps the first
+                            sorted_indices = torch.argsort(inverse_map_tensor,
+                                                           descending=True)  # Change to False for the first occurrence
+                            sorted_inverse_map = inverse_map_tensor[sorted_indices]
+                            sorted_labels = pseudo_voxel_label_1_tensor[sorted_indices]
+
+                            # Use scatter to assign values to pseudo_voxel_label_current_1
+                            pseudo_voxel_label_current_1.scatter_(0, sorted_inverse_map, sorted_labels)
+
+                            # Define a default label value, e.g., 0
+                            default_label = 0
+                            pseudo_voxel_label_current_1[pseudo_voxel_label_current_1 == -1] = default_label
+
+                            initial_weights = copy.deepcopy(self.model.state_dict())
+                            loss = network_loss(ret_dict['stacked_predict_logits'], pseudo_voxel_label_current_1)
+                            # Step 3: Backpropagate with scaled loss and temporarily update weights
+                            self.optimizer.zero_grad()  # Clear previous gradients
+                            self.scaler.scale(loss).backward()  # Scaled backward pass for mixed precision
+                            self.scaler.unscale_(self.optimizer)  # Unscale gradients for clipping
+                            clip_grad_norm_(self.model.parameters(), self.grad_norm_clip)  # Apply gradient clipping
+                            self.scaler.step(self.optimizer)  # Temporarily update model weights
+                            self.scaler.update()
+                            self.scheduler.step()
+
+                            # Step 4: Perform inference to capture features with the temporarily updated model
+                            with torch.no_grad():  # Disable gradient tracking for inference
+                                ret_dict = self.model(batch, is_active=True,
+                                                      is_training=True)  # Run forward pass to get features
+                                features_before_c = ret_dict['features']
+                                features_before_c_current = features_before_c[batch['targets'].C[:, 3] == i]
+                                features_before_c_1 = features_before_c_current[batch['inverse_map'][i]]
+                            # Step 5: Restore the initial weights to revert changes
+                            self.model.load_state_dict(initial_weights)
                             with torch.no_grad():
                                 assert self.masks[name].shape[0] == batch['raw_coord'][i].shape[0]
                                 voxel_preds_i = stacked_out[batch['targets'].C[:, 3] == i]
@@ -498,7 +618,7 @@ class Trainer:
                                 true_i = voxel_true_i[batch['inverse_map'][i]]
                                 # if not self.selected_class_count:
                                 # double check this part ( )
-                                if self.active_times == 4:
+                                if self.active_times == 5:
                                     self.active_sampler = RandomSelect(select_num=self.select_num,
                                                                        num_classes=self.num_classes,
                                                                        select_method=self.select_method,
@@ -517,21 +637,29 @@ class Trainer:
                                                                                     voxel_size=self.active_voxel_size,
                                                                                     max_points_per_voxel=self.max_points_per_voxel,
                                                                                     voxel_select_method=cfgs.ACTIVE.VOXEL_SELECT_METHOD)
-                                        self.masks[name], true_selected_label_count = self.active_sampler.select(self.masks[name], batch['raw_coord'][i],
-                                                                            preds_i, true_i, self.selected_class_count)
+                                        self.masks[name], true_selected_label_count = self.active_sampler.select(
+                                            self.masks[name], batch['raw_coord'][i],
+                                            preds_i, true_i, self.selected_class_count)
                                     else:
-                                        self.active_sampler = Logit_Select_Reverse(select_num=self.select_num,
+                                        self.active_sampler = Features_Entropy_Greedy_Select_Logit_Mean(
+                                            select_num=self.select_num,
                                             num_classes=self.num_classes,
                                             select_method=self.select_method,
                                             voxel_size=self.active_voxel_size,
                                             max_points_per_voxel=self.max_points_per_voxel,
                                             voxel_select_method=cfgs.ACTIVE.VOXEL_SELECT_METHOD)
-                                        self.masks[name] = self.active_sampler.select(self.masks[name],
-                                                                                      batch['raw_coord'][i],
-                                                                                      preds_i, true_i, stacked_out_i)
-                                        # self.point_cloud_stat_true.append(true_stat[0])
-                                        # self.point_cloud_stat_pre.append(pre_stat[0])
-
+                                        self.masks[name], true_stat, pre_stat = self.active_sampler.select(
+                                            self.masks[name], batch['raw_coord'][i],
+                                            preds_i, true_i, self.selected_class_count, features_before_c_1)
+                                        self.point_cloud_stat_true.append(true_stat[0])
+                                        self.point_cloud_stat_pre.append(pre_stat[0])
+                                        if point_count is None:
+                                            point_count = true_stat[0][0]
+                                        else:
+                                            point_count += true_stat[0][0]
+                                        current_count = point_count.sum()
+                                        if current_count >= 6000:
+                                            if_active = False
                                 if self.active_method == 'EGS':
                                     # if self.selected_class_count is None:
                                     if All_true_selected_label_count is None:
