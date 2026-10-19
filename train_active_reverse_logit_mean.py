@@ -381,6 +381,7 @@ class Trainer:
         return
 
     def train_one_epoch(self, tbar, data_cfg):
+        point_count = None
         self.model.train()
         total_it_each_epoch = len(self.loader)
         dataloader_iter = iter(self.loader)
@@ -480,12 +481,18 @@ class Trainer:
                                             voxel_size=self.active_voxel_size,
                                             max_points_per_voxel=self.max_points_per_voxel,
                                             voxel_select_method=cfgs.ACTIVE.VOXEL_SELECT_METHOD)
-                                        self.masks[name] = self.active_sampler.select(self.masks[name],
+                                        self.masks[name], true_stat, pre_stat = self.active_sampler.select(self.masks[name],
                                                                                       batch['raw_coord'][i],
                                                                                       preds_i, true_i, stacked_out_i)
-                                        # self.point_cloud_stat_true.append(true_stat[0])
-                                        # self.point_cloud_stat_pre.append(pre_stat[0])
-
+                                        self.point_cloud_stat_true.append(true_stat[0])
+                                        self.point_cloud_stat_pre.append(pre_stat[0])
+                                        if point_count is None:
+                                            point_count = true_stat[0][0]
+                                        else:
+                                            point_count += true_stat[0][0]
+                                        current_count = point_count.sum()
+                                        if current_count >= 6000:
+                                            if_active = False
                                 if self.active_method == 'EGS':
                                     # if self.selected_class_count is None:
                                     if All_true_selected_label_count is None:

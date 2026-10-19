@@ -5,7 +5,7 @@ import torch
 from torch.utils import data
 from nuscenes.nuscenes import NuScenes as nuScenes
 from .nuscenes_utils import NuscenesLidarMethods
-from .nuscenes_utils import LEARNING_MAP_12, LEARNING_MAP_13, LEARNING_MAP_7
+from .nuscenes_utils import LEARNING_MAP_12, LEARNING_MAP_13, LEARNING_MAP_7, LEARNING_MAP_16
 import random
 
 ABSOLUTE_PATH = os.path.dirname(os.path.abspath(__file__))
@@ -114,6 +114,8 @@ class NuscDataset(data.Dataset):
             points_label = np.vectorize(LEARNING_MAP_12.__getitem__)(points_label)
         elif self.num_classes == 7:
             points_label = np.vectorize(LEARNING_MAP_7.__getitem__)(points_label)
+        elif self.num_classes == 16:
+            points_label = np.vectorize(LEARNING_MAP_16.__getitem__)(points_label)
         else:
             raise NotImplementedError
 

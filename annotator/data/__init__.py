@@ -116,7 +116,7 @@ def build_dataloader(
             batch_size=batch_size,
             pin_memory=True,
             num_workers=workers,
-            shuffle=(sampler is None) and training,
+            shuffle=False,
             collate_fn=dataset.collate_batch,
             drop_last=False,
             sampler=sampler,

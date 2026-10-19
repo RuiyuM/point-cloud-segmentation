@@ -25,11 +25,18 @@ class NuscVoxelDataset(data.Dataset):
         self.data_cfgs = data_cfgs
         self.training = training
         self.num_classes = data_cfgs.NUM_CLASSES
-        if self.num_classes == 7:
-            self.class_names = [  # 7
-                "unlabeled",  # ignored
-                "vehicle", "pedestrian", "road", "sidewalk", "terrain", "manmade",
-                "vegetation",
+        if self.num_classes == 16:
+            # self.class_names = [  # 7
+            #     "unlabeled",  # ignored
+            #     "vehicle", "pedestrian", "road", "sidewalk", "terrain", "manmade",
+            #     "vegetation",
+            # ]
+            self.class_names = [
+                'noise',  # ignored
+                'barrier', 'bicycle', 'bus', 'car', 'construction_vehicle', 'motorcycle', 'pedestrian', 'traffic_cone',
+                'trailer', 'truck',  # thing
+                'driveable_surface', 'other_flat', 'sidewalk', 'terrain', 'manmade', 'vegetation'
+                # stuff
             ]
         else:
             raise NotImplementedError
